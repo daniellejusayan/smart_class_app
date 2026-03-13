@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="/app/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="SmartClass — Smart Check-in & Learning Reflection App">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231A1F3C'/%3E%3Ctext x='32' y='41' font-size='34' text-anchor='middle'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="SmartClass">
+  <title>SmartClass</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #1A1F3C;
+    }
+    .portal-switch {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      z-index: 10000;
+      display: flex;
+      gap: 8px;
+      font-family: sans-serif;
+    }
+    .portal-switch a {
+      text-decoration: none;
+      color: rgba(255,255,255,0.9);
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 8px;
+      padding: 6px 10px;
+      background: rgba(26,31,60,0.72);
+      font-size: 12px;
+      font-weight: 600;
+      backdrop-filter: blur(6px);
+    }
+    .portal-switch a:hover {
+      background: rgba(255,255,255,0.12);
+    }
+    /* Loading indicator while Flutter initialises */
+    #loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid rgba(79,110,247,0.2);
+      border-top-color: #4F6EF7;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text {
+      color: rgba(255,255,255,0.5);
+      font-family: sans-serif;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="portal-switch">
+    <a href="/">Home</a>
+    <a href="/instructor/">Instructor Portal</a>
+  </div>
+
+  <div id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Loading SmartClass...</div>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        registrations.forEach((registration) => registration.unregister());
+      });
+    }
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

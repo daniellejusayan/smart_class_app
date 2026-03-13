@@ -1,0 +1,2 @@
+This folder is required by pubspec.yaml (assets: - assets/).
+You can add your image and other asset files here.

@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartClass — Instructor QR Generator</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231A1F3C'/%3E%3Ctext x='32' y='41' font-size='34' text-anchor='middle'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #1A1F3C;
+      --accent: #4F6EF7;
+      --green: #2EC4B6;
+      --amber: #FFA500;
+      --surface: #F4F6FF;
+      --card: #ffffff;
+      --border: #E5E7EB;
+      --text: #1A1F3C;
+      --muted: #6B7280;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--surface);
+      min-height: 100vh;
+      color: var(--text);
+    }
+
+    header {
+      background: var(--primary);
+      padding: 0 32px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    header .logo-icon {
+      width: 36px; height: 36px;
+      background: rgba(79,110,247,0.2);
+      border-radius: 10px;
+      display: grid; place-items: center;
+      font-size: 18px;
+    }
+    header h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: white;
+    }
+    header .badge {
+      background: rgba(79,110,247,0.2);
+      color: #8BA4FA;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    .top-nav {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .top-nav a {
+      color: rgba(255,255,255,0.86);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid rgba(255,255,255,0.24);
+      border-radius: 8px;
+      padding: 6px 10px;
+      transition: all 0.2s;
+    }
+    .top-nav a:hover {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+    @media (max-width: 760px) {
+      header {
+        height: auto;
+        padding: 10px 16px;
+        flex-wrap: wrap;
+      }
+      .top-nav {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 48px 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    @media (max-width: 720px) {
+      main { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--card);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      padding: 32px;
+    }
+
+    .panel h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .panel .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      background: white;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 16px;
+    }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79,110,247,0.08);
+    }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    button.primary {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 4px;
+    }
+    button.primary:hover { background: #3A5CE0; }
+    button.primary:active { transform: scale(0.98); }
+
+    button.secondary {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      color: var(--accent);
+      border: 1.5px solid var(--accent);
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 10px;
+    }
+    button.secondary:hover { background: rgba(79,110,247,0.06); }
+
+    /* QR Output panel */
+    .qr-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .qr-placeholder {
+      width: 220px; height: 220px;
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+    .qr-placeholder .icon { font-size: 40px; opacity: 0.4; }
+
+    #qr-wrapper {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+    }
+
+    #qr-box {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      border: 2px solid var(--accent);
+      box-shadow: 0 8px 32px rgba(79,110,247,0.12);
+    }
+
+    .qr-meta {
+      text-align: center;
+      width: 100%;
+    }
+    .qr-meta .class-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .qr-meta .qr-code-val {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+      font-family: monospace;
+      background: var(--surface);
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+    .qr-meta .expires {
+      font-size: 12px;
+      color: var(--amber);
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    /* Timer */
+    .timer-ring {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 12px 20px;
+      width: 100%;
+    }
+    .timer-ring .countdown {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--accent);
+      min-width: 56px;
+    }
+    .timer-ring .timer-label { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+    /* Active sessions */
+    .sessions-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .sessions-header h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .session-count {
+      background: var(--accent);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 20px;
+    }
+
+    .session-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .session-dot {
+      width: 10px; height: 10px;
+      background: var(--green);
+      border-radius: 50%;
+      flex-shrink: 0;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .session-info { flex: 1; min-width: 0; }
+    .session-name {
+      font-weight: 700;
+      font-size: 14px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .session-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .session-expire { font-size: 12px; font-weight: 600; color: var(--amber); white-space: nowrap; }
+
+    .empty-sessions {
+      text-align: center;
+      padding: 24px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* ── Live Check-in Dashboard ──────────────────────────────────────── */
+    .dashboard {
+      max-width: 960px;
+      margin: 0 auto 64px;
+      padding: 0 24px;
+    }
+
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .dashboard-header h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      flex: 1;
+    }
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(46,196,182,0.12);
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+    .live-dot {
+      width: 8px; height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 600px) { .stats-row { grid-template-columns: 1fr 1fr; } }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 24px;
+    }
+    .stat-card .stat-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .stat-card .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+      font-weight: 600;
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-bar select {
+      width: auto;
+      margin-bottom: 0;
+      padding: 8px 12px;
+      font-size: 13px;
+      border-radius: 8px;
+      flex: 1;
+      min-width: 160px;
+      max-width: 300px;
+    }
+    .filter-bar .clear-btn {
+      padding: 8px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .filter-bar .clear-btn:hover { background: var(--border); }
+
+    .checkin-table {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    .table-head {
+      display: grid;
+      grid-template-columns: 1.2fr 0.9fr 1.1fr 0.8fr 1fr 1.25fr 0.8fr;
+      padding: 12px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+    }
+    @media (max-width: 680px) {
+      .table-head { display: none; }
+    }
+
+    .checkin-row {
+      display: grid;
+      grid-template-columns: 1.2fr 0.9fr 1.1fr 0.8fr 1fr 1.25fr 0.8fr;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+      font-size: 13px;
+      transition: background 0.15s;
+      animation: slideIn 0.35s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .checkin-row:last-child { border-bottom: none; }
+    .checkin-row:hover { background: var(--surface); }
+
+    @media (max-width: 680px) {
+      .checkin-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        padding: 12px 16px;
+      }
+    }
+
+    .student-id {
+      font-weight: 700;
+      font-size: 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .cell-muted { color: var(--muted); font-size: 12px; }
+    .mood-chip {
+      font-size: 18px;
+      line-height: 1;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .status-in {
+      background: rgba(46,196,182,0.12);
+      color: var(--green);
+    }
+    .status-out {
+      background: rgba(79,110,247,0.1);
+      color: var(--accent);
+    }
+    .map-link {
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      border-bottom: 1px dotted var(--accent);
+    }
+    .map-link:hover {
+      opacity: 0.85;
+    }
+
+    .empty-dashboard {
+      padding: 48px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .empty-dashboard .icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+    .empty-dashboard p { font-size: 14px; line-height: 1.6; }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--primary);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: transform 0.3s ease;
+      z-index: 999;
+      white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">🎓</div>
+  <h1>SmartClass</h1>
+  <div class="top-nav">
+    <a href="/">Home</a>
+    <a href="/app/">Student App</a>
+    <span class="badge">Instructor Portal</span>
+  </div>
+</header>
+
+<main>
+  <!-- Left: Generator -->
+  <div>
+    <div class="panel">
+      <h2>Generate Class QR</h2>
+      <p class="subtitle">Create a QR code for your class session. Students will scan this to check in and out.</p>
+
+      <label>Class Name</label>
+      <input type="text" id="className" placeholder="e.g. Software Engineering 301" />
+
+      <label>Class Code</label>
+      <input type="text" id="classCode" placeholder="e.g. CS301" />
+
+      <div class="row">
+        <div>
+          <label>Room</label>
+          <input type="text" id="room" placeholder="e.g. A-203" />
+        </div>
+        <div>
+          <label>QR Expires After</label>
+          <select id="duration">
+            <option value="300">5 minutes</option>
+            <option value="600">10 minutes</option>
+            <option value="900" selected>15 minutes</option>
+            <option value="1800">30 minutes</option>
+            <option value="3600">1 hour</option>
+            <option value="0">No expiry</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="primary" onclick="generateQR()">⚡ Generate QR Code</button>
+    </div>
+
+    <!-- Active sessions -->
+    <div style="margin-top: 24px;">
+      <div class="sessions-header">
+        <h2>Active Sessions</h2>
+        <span class="session-count" id="sessionCount">0</span>
+      </div>
+      <div id="sessionsList">
+        <div class="empty-sessions">No active sessions yet.<br/>Generate a QR code to start one.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: QR Display -->
+  <div class="panel">
+    <h2>QR Code Display</h2>
+    <p class="subtitle">Show this on your projector or screen. Students scan it with the SmartClass app.</p>
+
+    <div class="qr-panel">
+      <div class="qr-placeholder" id="placeholder">
+        <div class="icon">📱</div>
+        <div>Fill in the form<br/>and click Generate</div>
+      </div>
+
+      <div id="qr-wrapper">
+        <div class="qr-meta">
+          <div class="class-name" id="displayName">—</div>
+          <div class="qr-code-val" id="displayCode">—</div>
+        </div>
+
+        <div id="qr-box">
+          <div id="qr-output"></div>
+        </div>
+
+        <div class="timer-ring" id="timerRing" style="display:none;">
+          <div class="countdown" id="countdown">—</div>
+          <div class="timer-label">seconds remaining<br/><span style="color:var(--accent);font-weight:600;">QR is active</span></div>
+        </div>
+
+        <button class="secondary" onclick="downloadQR()">⬇ Download QR Image</button>
+        <button class="secondary" onclick="regenerate()">🔄 Regenerate Code</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ── Live Check-in Dashboard ─────────────────────────────────────────── -->
+<section class="dashboard">
+  <div class="dashboard-header">
+    <h2>Live Check-in Feed</h2>
+    <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-value" id="statTotal">—</div>
+      <div class="stat-label">Total Check-ins</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statIn" style="color:var(--green)">—</div>
+      <div class="stat-label">Currently In Class</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statOut" style="color:var(--accent)">—</div>
+      <div class="stat-label">Checked Out</div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <select id="filterClass" onchange="applyFilter()">
+      <option value="">All Classes</option>
+    </select>
+    <button class="clear-btn" onclick="clearFilter()">✕ Clear filter</button>
+    <span id="filterInfo" style="font-size:13px;color:var(--muted);"></span>
+  </div>
+
+  <div class="checkin-table">
+    <div class="table-head">
+      <span>Student ID</span>
+      <span>Class</span>
+      <span>Check-in Time</span>
+      <span>Mood</span>
+      <span>Expected Topic</span>
+      <span>Location</span>
+      <span>Status</span>
+    </div>
+    <div id="checkinFeed">
+      <div class="empty-dashboard">
+        <div class="icon">📋</div>
+        <p>Waiting for students to check in…<br/>Rows appear here in real-time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="toast"></div>
+
+<script>
+  // ── Firebase setup ──────────────────────────────────────────────────────────
+  firebase.initializeApp({
+    apiKey: 'AIzaSyCoX0F2HlJY5Le1N5UPNC-VUEpNWwK-Bao',
+    authDomain: 'smart-class-app-b42fd.firebaseapp.com',
+    projectId: 'smart-class-app-b42fd',
+    storageBucket: 'smart-class-app-b42fd.firebasestorage.app',
+    messagingSenderId: '1081457713264',
+    appId: '1:1081457713264:web:c2e613b24947e53decd4b5',
+  });
+  const db = firebase.firestore();
+  db.settings({
+    experimentalForceLongPolling: true,
+    useFetchStreams: false,
+  });
+
+  // ── Local state ─────────────────────────────────────────────────────────────
+  let sessions = [];
+  let countdownInterval = null;
+  let currentExpiry = null;
+  let displayedSessionQr = null;
+  let knownCheckinIds = new Set();
+
+  function generateQR() {
+    const className = document.getElementById('className').value.trim();
+    const classCode = document.getElementById('classCode').value.trim();
+    const room = document.getElementById('room').value.trim();
+    const duration = parseInt(document.getElementById('duration').value);
+
+    if (!className || !classCode) {
+      showToast('⚠️ Please enter Class Name and Code');
+      return;
+    }
+
+    const timestamp = Date.now();
+    const qrValue = `SMARTCLASS|${classCode}|${timestamp}|${room || 'N/A'}`;
+    const expiry = duration > 0 ? timestamp + duration * 1000 : null;
+
+    // Add to sessions
+    const session = { className, classCode, room, qrValue, expiry, timestamp };
+    sessions = sessions.filter(s => s.classCode !== classCode); // replace existing
+    sessions.unshift(session);
+    renderSessions();
+
+    // Save active session to Firestore so students can check in from any device.
+    db.collection('active_sessions').doc(classCode).set({
+      className,
+      classCode,
+      room,
+      qrValue,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      expiresAt: expiry ? new Date(expiry).toISOString() : null,
+    }).catch(err => console.warn('Firestore write failed:', err));
+
+    // Render QR
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('qr-wrapper').style.display = 'flex';
+    document.getElementById('displayName').textContent = className;
+    document.getElementById('displayCode').textContent = qrValue;
+
+    const output = document.getElementById('qr-output');
+    output.innerHTML = '';
+    new QRCode(output, {
+      text: qrValue,
+      width: 200,
+      height: 200,
+      colorDark: '#1A1F3C',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H,
+    });
+
+    // Timer
+    if (countdownInterval) clearInterval(countdownInterval);
+    currentExpiry = expiry;
+
+    if (expiry) {
+      document.getElementById('timerRing').style.display = 'flex';
+      updateCountdown(expiry);
+      countdownInterval = setInterval(() => {
+        const remaining = Math.floor((expiry - Date.now()) / 1000);
+        if (remaining <= 0) {
+          clearInterval(countdownInterval);
+          document.getElementById('countdown').textContent = '0';
+          showToast('⏰ QR code has expired. Generate a new one.');
+          sessions = sessions.filter(s => s.qrValue !== qrValue);
+          renderSessions();
+          // Remove expired session from Firestore.
+          db.collection('active_sessions').doc(classCode).delete()
+            .catch(err => console.warn('Firestore delete failed:', err));
+        } else {
+          updateCountdown(expiry);
+        }
+      }, 1000);
+    } else {
+      document.getElementById('timerRing').style.display = 'none';
+    }
+
+    showToast('✅ QR Code generated!');
+  }
+
+  function renderQrSession(session) {
+    if (!session) {
+      clearQrDisplay();
+      return;
+    }
+
+    displayedSessionQr = session.qrValue;
+    currentExpiry = session.expiry;
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('qr-wrapper').style.display = 'flex';
+    document.getElementById('displayName').textContent = session.className;
+    document.getElementById('displayCode').textContent = session.qrValue;
+
+    const output = document.getElementById('qr-output');
+    output.innerHTML = '';
+    new QRCode(output, {
+      text: session.qrValue,
+      width: 200,
+      height: 200,
+      colorDark: '#1A1F3C',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H,
+    });
+
+    if (countdownInterval) clearInterval(countdownInterval);
+    if (session.expiry) {
+      document.getElementById('timerRing').style.display = 'flex';
+      updateCountdown(session.expiry);
+      countdownInterval = setInterval(() => {
+        const remaining = Math.floor((session.expiry - Date.now()) / 1000);
+        if (remaining <= 0) {
+          clearInterval(countdownInterval);
+          document.getElementById('countdown').textContent = '0';
+        } else {
+          updateCountdown(session.expiry);
+        }
+      }, 1000);
+    } else {
+      document.getElementById('timerRing').style.display = 'none';
+    }
+  }
+
+  function clearQrDisplay() {
+    displayedSessionQr = null;
+    currentExpiry = null;
+    if (countdownInterval) clearInterval(countdownInterval);
+    document.getElementById('placeholder').style.display = 'flex';
+    document.getElementById('qr-wrapper').style.display = 'none';
+    document.getElementById('qr-output').innerHTML = '';
+  }
+
+  function updateCountdown(expiry) {
+    const remaining = Math.max(0, Math.floor((expiry - Date.now()) / 1000));
+    const mins = Math.floor(remaining / 60);
+    const secs = remaining % 60;
+    document.getElementById('countdown').textContent =
+      mins > 0 ? `${mins}:${secs.toString().padStart(2, '0')}` : `${secs}s`;
+  }
+
+  function renderSessions() {
+    const list = document.getElementById('sessionsList');
+    const count = document.getElementById('sessionCount');
+    const active = sessions.filter(s => !s.expiry || s.expiry > Date.now());
+    count.textContent = active.length;
+
+    if (displayedSessionQr) {
+      const displayed = active.find(s => s.qrValue === displayedSessionQr);
+      if (displayed) {
+        renderQrSession(displayed);
+      } else if (active.length > 0) {
+        renderQrSession(active[0]);
+      } else {
+        clearQrDisplay();
+      }
+    } else if (active.length > 0) {
+      renderQrSession(active[0]);
+    }
+
+    if (active.length === 0) {
+      list.innerHTML = '<div class="empty-sessions">No active sessions yet.<br/>Generate a QR code to start one.</div>';
+      return;
+    }
+
+    list.innerHTML = active.map(s => {
+      const remaining = s.expiry ? Math.max(0, Math.floor((s.expiry - Date.now()) / 1000)) : null;
+      const expiryText = remaining !== null
+        ? (remaining > 60 ? `${Math.floor(remaining/60)}m remaining` : `${remaining}s remaining`)
+        : 'No expiry';
+      return `
+        <div class="session-card">
+          <div class="session-dot"></div>
+          <div class="session-info">
+            <div class="session-name">${s.className}</div>
+            <div class="session-sub">${s.classCode}${s.room ? ' · ' + s.room : ''}</div>
+          </div>
+          <button class="clear-btn" onclick="renderQrSessionByValue('${s.qrValue.replace(/'/g, "\\'")}')">View</button>
+          <div class="session-expire">${expiryText}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderQrSessionByValue(qrValue) {
+    renderQrSession(sessions.find(s => s.qrValue === qrValue));
+  }
+
+  function regenerate() {
+    generateQR();
+  }
+
+  function downloadQR() {
+    const canvas = document.querySelector('#qr-output canvas');
+    if (!canvas) { showToast('Generate a QR code first'); return; }
+    const link = document.createElement('a');
+    link.download = `smartclass-qr-${Date.now()}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+    showToast('📥 QR image downloaded!');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function showFirestoreConnectionError(context) {
+    showToast(`Firestore connection issue in ${context}. Refresh the page and try again.`);
+  }
+
+  // Refresh session timers every 10s
+  setInterval(renderSessions, 10000);
+
+  db.collection('active_sessions').onSnapshot(snapshot => {
+    sessions = snapshot.docs.map(doc => {
+      const data = doc.data();
+      const expiry = data.expiresAt ? new Date(data.expiresAt).getTime() : null;
+      const createdAt = data.createdAt && data.createdAt.toDate
+        ? data.createdAt.toDate().getTime()
+        : Date.now();
+      return {
+        className: data.className || doc.id,
+        classCode: data.classCode || doc.id,
+        room: data.room || '',
+        qrValue: data.qrValue || '',
+        expiry,
+        timestamp: createdAt,
+      };
+    }).filter(s => s.qrValue).sort((a, b) => b.timestamp - a.timestamp);
+    renderSessions();
+  }, err => {
+    console.warn('Active session listen error:', err);
+    showFirestoreConnectionError('active sessions');
+  });
+
+  // ── Live Check-in Dashboard ───────────────────────────────────────────────
+  const MOODS = { 1: '😞', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' };
+
+  let allCheckins = [];   // full snapshot from Firestore
+  let activeFilter = '';  // currently selected classCode filter
+
+  // Subscribe to the checkins collection — fires immediately and on every change.
+  db.collection('checkins')
+    .orderBy('checkin_time', 'desc')
+    .limit(200)
+    .onSnapshot(snapshot => {
+      const isInitialLoad = knownCheckinIds.size === 0;
+      const latestIds = new Set(snapshot.docs.map(d => d.id));
+      if (!isInitialLoad) {
+        snapshot.docChanges().forEach(change => {
+          if (change.type !== 'added') return;
+          if (knownCheckinIds.has(change.doc.id)) return;
+          const data = change.doc.data();
+          const studentId = data.student_id || 'Unknown student';
+          const classCode = extractClassCode(data.checkin_qr_value) || 'class';
+          showToast(`✅ ${studentId} checked in to ${classCode}`);
+        });
+      }
+      allCheckins = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      knownCheckinIds = latestIds;
+      refreshDashboard();
+    }, err => {
+      console.warn('Firestore listen error:', err);
+      showFirestoreConnectionError('live check-in feed');
+    });
+
+  function refreshDashboard() {
+    // Update the filter dropdown with any new class codes seen.
+    const codes = [...new Set(
+      allCheckins
+        .map(c => extractClassCode(c.checkin_qr_value))
+        .filter(Boolean)
+    )].sort();
+    const sel = document.getElementById('filterClass');
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">All Classes</option>' +
+      codes.map(c => `<option value="${c}"${c === prev ? ' selected' : ''}>${c}</option>`).join('');
+
+    // Apply active filter
+    const shown = activeFilter
+      ? allCheckins.filter(c => extractClassCode(c.checkin_qr_value) === activeFilter)
+      : allCheckins;
+
+    // Stats
+    const checkedOut = shown.filter(c => c.checkout_time);
+    document.getElementById('statTotal').textContent = shown.length;
+    document.getElementById('statIn').textContent    = shown.length - checkedOut.length;
+    document.getElementById('statOut').textContent   = checkedOut.length;
+
+    const info = document.getElementById('filterInfo');
+    info.textContent = activeFilter ? `Showing ${shown.length} record(s) for ${activeFilter}` : '';
+
+    // Render rows
+    const feed = document.getElementById('checkinFeed');
+    if (shown.length === 0) {
+      feed.innerHTML = `
+        <div class="empty-dashboard">
+          <div class="icon">📋</div>
+          <p>Waiting for students to check in…<br/>Rows appear here in real-time.</p>
+        </div>`;
+      return;
+    }
+
+    feed.innerHTML = shown.map(c => {
+      const classCode = extractClassCode(c.checkin_qr_value) || '—';
+      const checkinTime = formatTime(c.checkin_time);
+      const mood = c.mood ? (MOODS[c.mood] || c.mood) : '—';
+      const expected = c.expected_topic ? escHtml(c.expected_topic) : '<span style="color:var(--muted)">—</span>';
+      const locationCell = formatLocationCell(c.checkin_latitude, c.checkin_longitude);
+      const status = c.checkout_time
+        ? `<span class="status-badge status-out">✓ Checked out</span>`
+        : `<span class="status-badge status-in">● In class</span>`;
+      return `
+        <div class="checkin-row">
+          <div class="student-id">${escHtml(c.student_id || '—')}</div>
+          <div class="cell-muted">${escHtml(classCode)}</div>
+          <div class="cell-muted">${checkinTime}</div>
+          <div class="mood-chip">${mood}</div>
+          <div class="cell-muted" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${expected}</div>
+          <div class="cell-muted">${locationCell}</div>
+          <div>${status}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function applyFilter() {
+    activeFilter = document.getElementById('filterClass').value;
+    refreshDashboard();
+  }
+
+  function clearFilter() {
+    activeFilter = '';
+    document.getElementById('filterClass').value = '';
+    refreshDashboard();
+  }
+
+  function extractClassCode(qrValue) {
+    if (!qrValue) return '';
+    // Format: SMARTCLASS|{classCode}|{timestamp}|{room}
+    const parts = qrValue.split('|');
+    return parts.length >= 2 ? parts[1] : qrValue;
+  }
+
+  function formatTime(iso) {
+    if (!iso) return '—';
+    try {
+      const d = new Date(iso);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        + ' · ' + d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    } catch { return iso; }
+  }
+
+  function formatLocationCell(lat, lng) {
+    const latNum = Number(lat);
+    const lngNum = Number(lng);
+    if (!Number.isFinite(latNum) || !Number.isFinite(lngNum)) {
+      return '<span style="color:var(--muted)">—</span>';
+    }
+
+    const coords = `${latNum.toFixed(6)}, ${lngNum.toFixed(6)}`;
+    const mapUrl = `https://maps.google.com/?q=${encodeURIComponent(coords)}`;
+    return `<a class="map-link" href="${mapUrl}" target="_blank" rel="noopener noreferrer">${coords}</a>`;
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>

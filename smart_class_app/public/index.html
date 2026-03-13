@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartClass — Smart Check-in & Learning Reflection</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231A1F3C'/%3E%3Ctext x='32' y='41' font-size='34' text-anchor='middle'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #1A1F3C;
+      --accent: #4F6EF7;
+      --green: #2EC4B6;
+      --surface: #F4F6FF;
+      --border: #E5E7EB;
+      --text: #1A1F3C;
+      --muted: #6B7280;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: white;
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 64px;
+      background: rgba(26,31,60,0.96);
+      backdrop-filter: blur(12px);
+      display: flex; align-items: center;
+      padding: 0 40px;
+      z-index: 100;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; }
+    .nav-logo .icon {
+      width: 34px; height: 34px;
+      background: rgba(79,110,247,0.2);
+      border-radius: 9px;
+      display: grid; place-items: center;
+      font-size: 16px;
+    }
+    .nav-logo span {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px; font-weight: 700;
+      color: white;
+    }
+    .nav-links {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    nav a.instructor-link {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 13px; font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.15);
+      padding: 6px 16px;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    nav a.instructor-link:hover {
+      background: rgba(255,255,255,0.08);
+      color: white;
+    }
+    @media (max-width: 700px) {
+      nav {
+        padding: 0 16px;
+      }
+      nav a.instructor-link {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+    }
+
+    /* HERO */
+    .hero {
+      background: var(--primary);
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding: 120px 40px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 60% at 70% 40%, rgba(79,110,247,0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(46,196,182,0.12) 0%, transparent 60%);
+    }
+
+    .hero-inner {
+      max-width: 1100px; margin: 0 auto; width: 100%;
+      display: grid; grid-template-columns: 1fr 420px;
+      gap: 64px; align-items: center;
+      position: relative; z-index: 1;
+    }
+
+    @media (max-width: 860px) {
+      .hero-inner { grid-template-columns: 1fr; }
+      .hero-visual { display: none; }
+    }
+
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(79,110,247,0.15);
+      border: 1px solid rgba(79,110,247,0.3);
+      color: #8BA4FA;
+      font-size: 12px; font-weight: 600;
+      padding: 6px 14px; border-radius: 20px;
+      margin-bottom: 24px;
+    }
+    .hero-tag .dot {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; } 50% { opacity: 0.3; }
+    }
+
+    .hero h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(40px, 5vw, 64px);
+      font-weight: 800;
+      color: white;
+      line-height: 1.05;
+      margin-bottom: 20px;
+    }
+    .hero h1 .accent { color: var(--accent); }
+    .hero h1 .green { color: var(--green); }
+
+    .hero p {
+      font-size: 17px; line-height: 1.7;
+      color: rgba(255,255,255,0.6);
+      max-width: 480px;
+      margin-bottom: 40px;
+    }
+
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-primary {
+      padding: 14px 28px;
+      background: var(--accent);
+      color: white;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px; font-weight: 700;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.1s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-primary:hover { background: #3A5CE0; transform: translateY(-1px); }
+
+    .btn-ghost {
+      padding: 14px 28px;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.8);
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px; font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-ghost:hover {
+      border-color: rgba(255,255,255,0.4);
+      color: white;
+      background: rgba(255,255,255,0.05);
+    }
+
+    /* Phone mockup */
+    .hero-visual {
+      display: flex; justify-content: center;
+    }
+    .phone {
+      width: 280px; height: 560px;
+      background: #0D1124;
+      border-radius: 40px;
+      border: 6px solid rgba(255,255,255,0.12);
+      box-shadow:
+        0 40px 80px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+      overflow: hidden;
+      position: relative;
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    .phone-screen {
+      padding: 16px;
+      height: 100%;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .phone-header {
+      display: flex; align-items: center; gap: 8px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .phone-header .ph-icon {
+      width: 28px; height: 28px;
+      background: rgba(79,110,247,0.2);
+      border-radius: 8px; display:grid; place-items:center; font-size:14px;
+    }
+    .phone-header .ph-title {
+      font-family: 'Space Grotesk', sans-serif;
+      color: white; font-size: 13px; font-weight: 700;
+    }
+    .ph-greeting { color: rgba(255,255,255,0.4); font-size: 11px; }
+    .ph-name { color: white; font-size: 17px; font-weight: 800; font-family: 'Space Grotesk', sans-serif; }
+    .ph-date { color: rgba(255,255,255,0.35); font-size: 10px; margin-top: 2px; }
+
+    .ph-banner {
+      background: rgba(46,196,182,0.12);
+      border: 1px solid rgba(46,196,182,0.25);
+      border-radius: 8px;
+      padding: 8px 10px;
+      display: flex; align-items: center; gap: 6px;
+      font-size: 10px; color: #2EC4B6; font-weight: 600;
+    }
+
+    .ph-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .ph-card-icon {
+      width: 40px; height: 40px; border-radius: 11px;
+      display: grid; place-items: center; font-size: 18px; flex-shrink: 0;
+    }
+    .ph-card-title { color: white; font-size: 13px; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
+    .ph-card-sub { color: rgba(255,255,255,0.4); font-size: 10px; margin-top: 2px; line-height: 1.4; }
+
+    /* FEATURES */
+    .features {
+      padding: 100px 40px;
+      background: var(--surface);
+    }
+    .section-label {
+      text-align: center;
+      font-size: 12px; font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(28px, 3vw, 40px);
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .features-grid {
+      max-width: 1000px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    @media (max-width: 700px) {
+      .features-grid { grid-template-columns: 1fr; }
+    }
+
+    .feature-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .feature-card:hover {
+      box-shadow: 0 8px 32px rgba(79,110,247,0.1);
+      transform: translateY(-4px);
+    }
+    .feature-icon {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      display: grid; place-items: center;
+      font-size: 22px;
+      margin-bottom: 16px;
+    }
+    .feature-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px; font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .feature-card p {
+      font-size: 13px; color: var(--muted); line-height: 1.6;
+    }
+
+    /* FLOW */
+    .flow {
+      padding: 100px 40px;
+      background: white;
+    }
+    .steps {
+      max-width: 700px; margin: 0 auto;
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .step {
+      display: flex; gap: 24px;
+      position: relative;
+      padding-bottom: 32px;
+    }
+    .step:last-child { padding-bottom: 0; }
+    .step-num {
+      width: 44px; height: 44px; flex-shrink: 0;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      display: grid; place-items: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800; font-size: 16px;
+      position: relative; z-index: 1;
+    }
+    .step-line {
+      position: absolute;
+      left: 21px; top: 44px; bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent), transparent);
+    }
+    .step:last-child .step-line { display: none; }
+    .step-content { padding-top: 8px; }
+    .step-content h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 17px; font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .step-content p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+    /* CTA */
+    .cta {
+      background: var(--primary);
+      padding: 100px 40px;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .cta::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 50% 80% at 50% 50%, rgba(79,110,247,0.15) 0%, transparent 70%);
+    }
+    .cta h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(28px, 4vw, 48px);
+      font-weight: 800; color: white;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .cta p {
+      color: rgba(255,255,255,0.5);
+      font-size: 16px; margin-bottom: 40px;
+      position: relative;
+    }
+    .cta-actions { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; position: relative; }
+
+    footer {
+      background: #111523;
+      color: rgba(255,255,255,0.3);
+      text-align: center;
+      padding: 24px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <div class="icon">🎓</div>
+    <span>SmartClass</span>
+  </div>
+  <div class="nav-links">
+    <a class="instructor-link" href="/app/">Student App</a>
+    <a class="instructor-link" href="/instructor/">Instructor Portal</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-copy">
+      <div class="hero-tag">
+        <span class="dot"></span>
+        Built for universities
+      </div>
+      <h1>
+        Smarter<br/>
+        <span class="accent">Check-ins.</span><br/>
+        Deeper <span class="green">Reflection.</span>
+      </h1>
+      <p>
+        Verify student presence with GPS and QR scanning — then capture meaningful
+        learning reflections before and after every class.
+      </p>
+      <div class="hero-actions">
+        <a href="/app/" class="btn-primary">📱 Open Student App</a>
+        <a href="/instructor/" class="btn-ghost">🎓 Instructor Portal</a>
+        <a href="#how-it-works" class="btn-primary">📖 How It Works</a>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-header">
+            <div class="ph-icon">🎓</div>
+            <div class="ph-title">SmartClass</div>
+          </div>
+          <div>
+            <div class="ph-greeting">Good morning,</div>
+            <div class="ph-name">STU2024001</div>
+            <div class="ph-date">Monday, March 13, 2026</div>
+          </div>
+          <div class="ph-banner">
+            <span>●</span> Active class session in progress
+          </div>
+          <div class="ph-card" style="border-color: rgba(79,110,247,0.3);">
+            <div class="ph-card-icon" style="background:rgba(79,110,247,0.15);">📍</div>
+            <div>
+              <div class="ph-card-title">Check In</div>
+              <div class="ph-card-sub">GPS · QR Scan · Reflection</div>
+            </div>
+          </div>
+          <div class="ph-card" style="border-color: rgba(46,196,182,0.3);">
+            <div class="ph-card-icon" style="background:rgba(46,196,182,0.15);">✅</div>
+            <div>
+              <div class="ph-card-title">Finish Class</div>
+              <div class="ph-card-sub">QR Scan · GPS · Learning Log</div>
+            </div>
+          </div>
+          <div style="margin-top: auto; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);">
+            <div style="color:rgba(255,255,255,0.35); font-size:10px; font-weight:600; margin-bottom:6px;">HOW IT WORKS</div>
+            <div style="color:rgba(255,255,255,0.5); font-size:10px; line-height:1.7;">
+              1. Tap Check In when class begins<br/>
+              2. Allow GPS & scan instructor's QR<br/>
+              3. Fill pre-class reflection<br/>
+              4. Tap Finish Class after session
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="section-label">Core Features</div>
+  <h2 class="section-title">Everything you need for<br/>reliable attendance</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#EEF2FF;">📍</div>
+      <h3>GPS Verification</h3>
+      <p>Automatically captures the student's location at check-in and checkout to confirm physical presence in class.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#F0FDF9;">📷</div>
+      <h3>QR Code Scanning</h3>
+      <p>Students scan a unique class QR code shown by the instructor — preventing remote or proxy attendance entirely.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#FFF7ED;">🧠</div>
+      <h3>Learning Reflections</h3>
+      <p>Pre-class and post-class reflection forms encourage active engagement and give instructors insight into student understanding.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#FDF4FF;">😄</div>
+      <h3>Mood Tracking</h3>
+      <p>A 5-point mood scale captures how students feel before each class, helping identify patterns over time.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#F0FDF9;">💾</div>
+      <h3>Offline Storage</h3>
+      <p>All data is stored locally on the device using SQLite. Records persist even if the app is closed or the network drops.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#EEF2FF;">🎓</div>
+      <h3>Instructor Portal</h3>
+      <p>A standalone web page lets instructors generate and display class QR codes with optional expiry timers — no app required.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="flow" id="how-it-works">
+  <div class="section-label">Student Flow</div>
+  <h2 class="section-title" style="margin-bottom:48px;">Four simple steps</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-line"></div>
+      <div class="step-content">
+        <h3>Open the App</h3>
+        <p>Launch SmartClass and tap <strong>Check In</strong> when your class begins.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-line"></div>
+      <div class="step-content">
+        <h3>Verify GPS Location</h3>
+        <p>The app captures your GPS coordinates to confirm you're physically on campus or in the classroom.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-line"></div>
+      <div class="step-content">
+        <h3>Scan the Class QR Code</h3>
+        <p>Point your camera at the instructor's QR code to link your attendance to the specific class session.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-line"></div>
+      <div class="step-content">
+        <h3>Fill in Your Reflection</h3>
+        <p>Answer a short reflection about the previous class and what you expect to learn today. Select your mood. Done!</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-line"></div>
+      <div class="step-content">
+        <h3>Finish Class</h3>
+        <p>At the end, tap <strong>Finish Class</strong>, scan the exit QR, and submit your post-class reflection with what you learned.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <h2>Ready to modernize<br/>your attendance?</h2>
+  <p>Set up SmartClass for your university in minutes.</p>
+  <div class="cta-actions">
+    <a href="/app/" class="btn-primary">📱 Open Student App</a>
+    <a href="/instructor/" class="btn-primary">🎓 Open Instructor Portal</a>
+    <a href="#how-it-works" class="btn-ghost">📖 Learn More</a>
+  </div>
+</section>
+
+<footer>
+  © 2026 SmartClass · Built with Flutter & Firebase · smart-class-app-b42fd
+</footer>
+
+</body>
+</html>

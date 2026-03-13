@@ -1,0 +1,14 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // active_sessions: instructor writes, students read to validate QR codes
+    match /active_sessions/{classCode} {
+      allow read: if true;
+      allow write: if true;
+    }
+    // checkins: students write their own records, instructor reads all
+    match /checkins/{docId} {
+      allow read, write: if true;
+    }
+  }
+}

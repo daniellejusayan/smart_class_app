@@ -1,0 +1,58 @@
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+*.iml
+
+# Android
+**/android/**/gradle-wrapper.jar
+**/android/.gradle
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
+**/android/key.properties
+*.keystore
+*.jks
+
+# Firebase
+.firebase/
+firebase-debug.log
+.firebaserc.local
+
+# IDE
+.idea/
+*.ipr
+*.iws
+.vscode/
+
+# macOS
+.DS_Store
+
+# Generated assets from accidental flutter create
+web/favicon.png
+web/icons/
+windows/runner/resources/app_icon.ico
+
+# Generated Flutter web bundle copied for hosting (keep only public/app/index.html tracked)
+public/app/.last_build_id
+public/app/assets/
+public/app/canvaskit/
+public/app/flutter.js
+public/app/flutter_bootstrap.js
+public/app/flutter_service_worker.js
+public/app/main.dart.js
+public/app/version.json
+
+# Optional platform scaffolds not used in this project setup
+ios/
+linux/
+macos/
+
+# Accidental malformed scaffold directory
+{lib/
