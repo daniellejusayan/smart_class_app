@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'dart:async';
 import '../services/student_service.dart';
 import '../services/database_service.dart';
 import '../services/firestore_service.dart';
@@ -31,26 +32,34 @@ class _HomeScreenState extends State<HomeScreen> {
     final id = await StudentService.getStudentId() ?? '';
     final activeDocId = await StudentService.getActiveCheckinDocId();
     dynamic openCheckin;
-    var firestoreReachable = true;
+    var firestoreReachable = false;
+
     try {
       if (activeDocId != null && activeDocId.isNotEmpty) {
         openCheckin = await FirestoreService.getOpenCheckinByDocId(
           id,
           activeDocId,
-        ).timeout(const Duration(seconds: 10));
+        ).timeout(const Duration(seconds: 10), onTimeout: () => null);
       }
 
       openCheckin ??= await FirestoreService.getLatestOpenCheckin(id)
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 10), onTimeout: () => null);
+      firestoreReachable = true;
     } catch (_) {
-      firestoreReachable = false;
       openCheckin = null;
     }
 
-    // Only use local fallback when Firestore is unreachable.
-    // If Firestore is reachable and returns null, there is no active session.
+    // Firestore is the source of truth for active session state.
+    // If Firestore says there is no open check-in, clear stale local/session cache.
+    if (firestoreReachable && openCheckin == null) {
+      await StudentService.clearActiveCheckinDocId();
+      await DatabaseService.clearAllOpenCheckins(id);
+    }
+
+    // If Firestore is unreachable, do NOT block students from checking in again
+    // based on stale local data from old tests.
     if (!firestoreReachable) {
-      openCheckin = await DatabaseService.getLatestOpenCheckin(id);
+      openCheckin = null;
     }
 
     if (mounted) {

@@ -137,6 +137,44 @@ class DatabaseService {
     return CheckinRecord.fromMap(maps.first);
   }
 
+  static Future<void> clearAllOpenCheckins(String studentId) async {
+    if (kIsWeb) {
+      final records = await _readWebRecords();
+      var changed = false;
+      final now = DateTime.now().toIso8601String();
+
+      for (var i = 0; i < records.length; i++) {
+        final item = records[i];
+        if (item['student_id'] != studentId) continue;
+        final isCompleted = (item['is_completed'] ?? 0) == 1;
+        if (isCompleted) continue;
+
+        records[i] = {
+          ...item,
+          'is_completed': 1,
+          'checkout_time': item['checkout_time'] ?? now,
+        };
+        changed = true;
+      }
+
+      if (changed) {
+        await _writeWebRecords(records);
+      }
+      return;
+    }
+
+    final db = await database;
+    await db.update(
+      'checkin_records',
+      {
+        'is_completed': 1,
+        'checkout_time': DateTime.now().toIso8601String(),
+      },
+      where: 'student_id = ? AND is_completed = 0',
+      whereArgs: [studentId],
+    );
+  }
+
   static Future<List<Map<String, dynamic>>> _readWebRecords() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_webStorageKey);
